@@ -47,7 +47,7 @@ and pushing the magic _reset_ button he was confronted with
     bcn 100
     1
 
-There is a lot he ignored for now but that may be another tale to tell.
+That looked cryptic to him so he ignored it for now. That may be another tale to tell.
 
 He saw his tag **Blinky, SDK version:1.1.1** and happily took a deap breath and started to blink.
 
@@ -63,10 +63,10 @@ After blinking for some time Blinky got bored.
 He decided to take a break from blinking and calling `gdb_breakpoint` looks like an interesting new way to do that.
 
 And so he added  
-> gdb_breakpoint(); 
-at the end of his `user_init` 
 
-and spelled the magic flash words again.
+    gdb_breakpoint(); 
+
+at the end of his `user_init` and spelled the magic flash words again.
 
 He was confronted with
 
@@ -76,7 +76,7 @@ He was confronted with
 Seeing his tag he wanted to start blinking again but couldn't. Nothing happens.
 
 He got a little bit frightened and but then decided to wait. From past adventures he knew that his little [watch dog](https://de.wikipedia.org/wiki/Watchdog) will find and rescue him. 
-If his dog does not get feed regularly he will get angry. To restore his familiar world he will `reset` it.
+If his dog does not get feed regularly he will get angry. To restore his familiar world he will `reset`.
 
 So Blinky waited and waited and waited ....
 
@@ -86,10 +86,10 @@ So he learned:
 
 **Don't expect watchdog timer resets when entering a break point!**
 
-Blinky decided to look up the cryptic response `$T05#b9` in his magic book and found it to be word of the ancient language of [_gdb stubs_](https://sourceware.org/gdb/onlinedocs/gdb/Stop-Reply-Packets.html#Stop-Reply-Packets).
+Blinky decided to look up the cryptic response `$T05#b9` in his magic book. He found it to be word of the ancient language of [_gdb stubs_](https://sourceware.org/gdb/onlinedocs/gdb/Stop-Reply-Packets.html#Stop-Reply-Packets).
 
-_T05_ told him that he was trapped (got a signal to enter debugger).
-The gdb stub took control and asks for assistance.
+According to the book _T05_ means that he was trapped (got a signal to enter debugger).
+It means that the gdb stub took control and asks for assistance.
 
 He felt adventorous and gave a magic reply he found somewhere:
 
@@ -101,11 +101,11 @@ To his surprise he got an answer:
 
     $fa38244010fcff3f0100000016000000201fff3f010000000000200010dcff3f150000000000000000000000d91f0040508efe3f088efe3f928cfe3f00000000807c10400b0000000000000002000000000000003200000000000000000000000000000000000000000000000000000000000000807c10400000000000000000200000000000000000000000fa382440000000004400000000000000000000001104000000001040000000000800000055152201000000000000000000000000000000009919af80#b8
 
-But he didn't understood it. He knew he needed someone to help him. The esp-open-sdk was caled to the rescue and it send `gdb` to help.
+But he didn't understood it. He knew he needed someone to help him. The esp-open-sdk was called to the rescue and it send `gdb` to help.
 
 `gdb` told Blinky to exit the terminal and let him do his job.
 
-`gdb` spelled his magic words
+`gdb` called one of it's brothers:
 
     xtensa-lx106-elf-gdb build/app.out
 
@@ -130,9 +130,9 @@ So he knew what code to expect and connects now:
     gdb_breakpoint () at arch_esp8266.c:35
     35	arch_esp8266.c: No such file or directory.
 
-Lets ignore the missing source error for now.
+Lets ignore the missing source code error.
 
-We are in the methods `gdb_breakpoint ()`!
+We are in the method `gdb_breakpoint ()`!
 
 Where do we come from? 
 
@@ -159,10 +159,35 @@ Now explore the caller of gdb_breakpoint:
     77	    gdb_breakpoint();
     78	}
 
+A better look at the registers:
+    (gdb) info registers 
+    a0             0x402438fa	1076115706
+    a1             0x3ffffc10	1073740816
+    a2             0x1	1
+    a3             0x16	22
+    a4             0x3fff1f20	1073684256
+    a5             0x1	1
+    a6             0x200000	2097152
+    a7             0x3fffdc10	1073732624
+    a8             0x15	21
+    a9             0x0	0
+    a10            0x0	0
+    a11            0x40001fd9	1073749977
+    a12            0x3ffe8e50	1073647184
+    a13            0x3ffe8e08	1073647112
+    a14            0x3ffe8c92	1073646738
+    a15            0x0	0
+    pc             0x40107c80	0x40107c80 <gdb_breakpoint>
+    sar            0xb	11
+    litbase        0x0	0
+    ps             0x32	50
+
 Then `gdb` remembered poor little Blinky and released him by issuing a magic `continue`:
 
     (gdb) c
     Continuing.
+
+and vanishes.
 
 And Blinky does what he lived for ...
 
@@ -170,10 +195,6 @@ And Blinky does what he lived for ...
     010101010101010101010
 
 To be continued ...
-
-
-80	void user_rf_pre_init(void)
-81	{
 
 
 
