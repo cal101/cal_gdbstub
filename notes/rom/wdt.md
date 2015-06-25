@@ -13,10 +13,11 @@ On this page I show how I tried to understand them.
 You can use `objdump` to analyze an annotated ROM image like [this](https://github.com/jcmvbkbc/esp-elf-rom). 
 I am doing it differently: Following the traces of [Blinky](https://github.com/cal101/cal_gdbstub/blob/master/BlinkyTale1.md) I am using gdb for disassembling and an annotated ROM image to provide symbols.
 
-The following address ranges are usefull to understand the analysis:
+The following address ranges are usefull to understand the analysis: (see memory map in wiki for more information)
 
     0x3fffc000 Addresses in data RAM, content is mutable
     0x40000000 Start of firmware ROM, content is immutable
+    0x60000000 Contains I/O registers
 
 The ABI defines how registers are used for parameters and return values.
 
@@ -118,3 +119,9 @@ I ignore signed/unsigned int issues to keep it short and simple.
     0x40003130:
     0x40003144:
     }
+
+We see that some memory address at `0x3fffc708` is read and written.
+
+2 Registers are accessed at `a4 + 0x300` and at `a4 + 0x314`.
+
+When looking at the code that avoids watch dog resets in the nodemcu firmware 
