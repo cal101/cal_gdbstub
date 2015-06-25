@@ -75,7 +75,18 @@ He was confronted with
 
 Seeing his tag he wanted to start blinking again but couldn't. Nothing happens.
 
-He got a little bit frightened and but then decided to wait. From past adventures he knew that his little watch dog will find and rescue him. 
+He got a little bit frightened and but then decided to wait. From past adventures he knew that his little [watch dog](https://de.wikipedia.org/wiki/Watchdog) will find and rescue him. 
+If his dog does not get feed regularly he will get angry. To restore his familiar world he will `reset` it.
+
+So Blinky waited and waited and waited ....
+
+Nothing happened, no watch dog arrived.
+
+So he learned:
+
+**Don't expect watchdog timer resets when entering a break point!**
+
+
 
 
 
