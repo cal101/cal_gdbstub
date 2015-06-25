@@ -13,6 +13,7 @@ The following symbols of the ROM firmware contain `wdt` in their names:
     PROVIDE ( ets_wdt_restore = 0x40003158 );
 
 You can use `objdump` to analyze an annotated ROM image like [this](https://github.com/jcmvbkbc/esp-elf-rom). 
+
 I am doing it differently: Following the traces of [Blinky](https://github.com/cal101/cal_gdbstub/blob/master/BlinkyTale1.md) I am using gdb for disassembling and an annotated ROM image to provide symbols.
 
 The following address ranges are usefull to understand the analysis: (see memory map in wiki for more information)
