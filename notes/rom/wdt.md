@@ -139,8 +139,6 @@ Lets introduce some constants and improve the decompiled code.
     volatile int wdt_state; // at address 0x3fffc708
 
     int ets_wdt_disable(void) {
-        int a2 = 0x3fffc708;
-        int a4 = 0x60000600
         int prev_wdt_state = wdt_state;
 
         // clear bit 1
