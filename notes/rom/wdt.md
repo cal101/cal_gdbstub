@@ -120,8 +120,37 @@ I ignore signed/unsigned int issues to keep it short and simple.
     0x40003144:
     }
 
-We see that some memory address at `0x3fffc708` is read and written.
+We see that some memory address at `0x3fffc708` is read and written and depending on its value something is done. Lets call it `wdt_state` and see where we get.
 
 2 Registers are accessed at `a4 + 0x300` and at `a4 + 0x314`.
 
-When looking at the code that avoids watch dog resets in the nodemcu firmware 
+When looking at the code that avoids watch dog resets in the nodemcu firmware (function `tmr_wdclr()` in [tmr.c](https://github.com/nodemcu/nodemcu-firmware/blob/dceed526c90aaa63a4ec2aaf11d8ce313f40c6ff/app/modules/tmr.c):
+
+    WRITE_PERI_REG(0x60000914, 0x73);
+
+we notice that decimal 115 is the same as hexadecimal 0x73 and the same register is written here.
+
+Lets introduce some constants and improve the decompiled code.
+
+    #define WDT_CRTL_TIMER_RESET 0x60000914
+    #define WDT_CMD_TIMER_RESET  0x73
+    #define WDT_XXX              0x60000900
+
+    volatile int wdt_state; // at address 0x3fffc708
+
+    int ets_wdt_disable(void) {
+        int a2 = 0x3fffc708;
+        int a4 = 0x60000600
+        int prev_wdt_state = wdt_state;
+
+        // clear bit 1
+        WRITE_PERI_REG(WDT_XXX, READ_PERI_REG(WDT_XXX) & -2);
+        // reset watchdog timer
+        WRITE_PERI_REG(WDT_CRTL_TIMER_RESET, WDT_CMD_TIMER_RESET);
+        wdt_state = 0;
+        if (prev_wdt_state == 1) goto 0x40003130
+        if (prev_wdt_state == 2) goto 0x40003144
+        return prev_wdt_state;
+    0x40003130:
+    0x40003144:
+    }
