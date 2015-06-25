@@ -179,6 +179,9 @@ we notice that decimal 115 is the same as hexadecimal 0x73 and the same register
 
 Lets introduce some constants and improve the decompiled code.
 
+    #include <c_types.h>
+    #include <eagle_soc.h>
+
     #define WDT_CRTL_TIMER_RESET 0x60000914
     #define WDT_CMD_TIMER_RESET  0x73
     #define WDT_XXX              0x60000900
@@ -189,7 +192,8 @@ Lets introduce some constants and improve the decompiled code.
         int prev_wdt_state = wdt_state;
 
         // clear bit 1
-        WRITE_PERI_REG(WDT_XXX, READ_PERI_REG(WDT_XXX) & -2);
+        // WRITE_PERI_REG(WDT_XXX, READ_PERI_REG(WDT_XXX) & -2);
+        CLEAR_PERI_REG_MASK(WDT_XXX, 0x02);
         // reset watchdog timer
         WRITE_PERI_REG(WDT_CRTL_TIMER_RESET, WDT_CMD_TIMER_RESET);
         wdt_state = 0;
@@ -202,3 +206,17 @@ Lets introduce some constants and improve the decompiled code.
     }
 
 Looks not that bad.
+
+Can we improve our confidence that our de-compiled code is not too bad?
+
+Yes, we can ask the compiler to compile our code and look at the generated assember os disassemble the object file.
+
+    xtensa-lx106-elf-gcc -g -Os -I ../../sdk/esp_iot_sdk_v1.1.1_15_06_05/esp_iot_sdk_v1.1.1/include --save-temps -c -o ets_wdt_disable.o  ets_wdt_disable.c
+
+Now you can 
+* study`ets_wdt_disable.s` which contains the assember code or
+* disassemble the generated object to look at the code:
+
+    xtensa-lx106-elf-objdump -dS ets_wdt_disable.o
+    
+
