@@ -1,4 +1,7 @@
 file build/app.out
 #set debug remote 1
 target remote /dev/ttyUSB0
-set serial baud 115200
+#set serial baud 115200
+#set serial baud 600
+set remotebaud 600
+add-symbol-file ../../../../compile/esp-elf-rom/esp-elf-rom/bootrom.elf 0x40000000
