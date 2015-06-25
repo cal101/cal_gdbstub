@@ -83,12 +83,52 @@ Here is a simplified excerpt of some rules:
     0x40003129 <+57>:	addi	a1, a1, 16
                    ;; return to calling method, register a0 contains return address
     0x4000312c <+60>:	ret.n
+    0x4000312e <+62>:	srai	a0, a0, 0
+    0x40003131 <+65>:	addi.n	a15, a15, 9
+    0x40003133 <+67>:	call0	0x40002d40 <ets_timer_disarm>
+    0x40003136 <+70>:	or	a2, a12, a12
 
     (gdb) x /1wx 0x40002f30
     0x40002f30 <ets_get_cpu_frequency+36>:	0x3fffc708
 
     (gdb) x /1wx 0x4000115c
     0x4000115c <main+368>:	0x60000600
+
+Notice that the code at address `0x4000311d` may jump to address `0x40003130` but we don't see proper assembler code at the address. Because the disassembler is simple it does not analyze jump targets but only uses known symbols to start disassembling. Inner jump targets of functions don't get symbols.
+
+Add alignment of jump targets to the picture and the disassembler is confused.
+
+We start disassembling at that address.
+    (gdb) disassemble 0x40003130,+20
+
+                                   ;;; a2 = *(0x40002f9c) = 0x3fffdde0
+    0x40003130 <ets_wdt_disable+64>:	l32r	a2, 0x40002f9c <ets_wdt_get_mode+104>
+                                   ;;; call method ets_timer_disarm with a2 containing first parameter
+    0x40003133 <ets_wdt_disable+67>:	call0	0x40002d40 <ets_timer_disarm>
+                                   ;;; a2 = a12 // set return value
+    0x40003136 <ets_wdt_disable+70>:	or	a2, a12, a12
+                                   ;;; epilogue restoring registers
+    0x40003139 <ets_wdt_disable+73>:	l32i	a0, a1, 0
+    0x4000313c <ets_wdt_disable+76>:	l32i	a12, a1, 4
+    0x4000313f <ets_wdt_disable+79>:	addi	a1, a1, 16
+    0x40003142 <ets_wdt_disable+82>:	ret.n
+
+    0x40002f9c <ets_wdt_get_mode+104>:	0x3fffdde0
+
+    (gdb) disassemble 0x40003144,+20
+
+    0x40003144 <ets_wdt_disable+84>:	movi	a2, 0x100
+                                   ;;; ets_isr_mask(0x100)
+    0x40003147 <ets_wdt_disable+87>:	call0	0x40000f98 <ets_isr_mask>
+                                   ;;; a2 = a12 // set return value
+    0x4000314a <ets_wdt_disable+90>:	or	a2, a12, a12
+                                   ;;; epilogue restoring registers
+    0x4000314d <ets_wdt_disable+93>:	l32i	a0, a1, 0
+    0x40003150 <ets_wdt_disable+96>:	l32i	a12, a1, 4
+    0x40003153 <ets_wdt_disable+99>:	addi	a1, a1, 16
+    0x40003156 <ets_wdt_disable+102>:	ret.n
+
+
 
 Now lets de-compile that assembler snippet into some pseudo C.
 
@@ -117,7 +157,12 @@ I ignore signed/unsigned int issues to keep it short and simple.
         if (a12 == 2) goto 0x40003144
         return a12;
     0x40003130:
+        ets_timer_disarm(0x3fffdde0);
+        return a12;
+
     0x40003144:
+        ets_isr_mask(0x100)
+        return a12;
     }
 
 We see that some memory address at `0x3fffc708` is read and written and depending on its value something is done. Lets call it `wdt_state` and see where we get.
@@ -146,9 +191,12 @@ Lets introduce some constants and improve the decompiled code.
         // reset watchdog timer
         WRITE_PERI_REG(WDT_CRTL_TIMER_RESET, WDT_CMD_TIMER_RESET);
         wdt_state = 0;
-        if (prev_wdt_state == 1) goto 0x40003130
-        if (prev_wdt_state == 2) goto 0x40003144
+        if (prev_wdt_state == 1) {
+            ets_timer_disarm(0x3fffdde0);
+        } else if (prev_wdt_state == 2) {
+            ets_isr_mask(0x100);
+        }
         return prev_wdt_state;
-    0x40003130:
-    0x40003144:
     }
+
+Looks not that bad.
