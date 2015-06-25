@@ -15,7 +15,7 @@ If you want to ask questions or discuss things please do that here: [Forum](http
 
 ## Getting started 
 
-BlinkyTale1.md
+[BlinkyTale1.md](https://github.com/cal101/cal_gdbstub/blob/master/BlinkyTale1.md)
 
 
 Have fun,
