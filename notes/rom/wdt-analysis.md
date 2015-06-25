@@ -209,7 +209,7 @@ Looks not that bad.
 
 Can we improve our confidence that our de-compiled code is not too bad?
 
-Yes, we can ask the compiler to compile our code and look at the generated assember os disassemble the object file.
+Yes, we can ask the compiler to compile our code and look at the generated assember code or disassemble the object file.
 
     xtensa-lx106-elf-gcc -g -Os -I ../../sdk/esp_iot_sdk_v1.1.1_15_06_05/esp_iot_sdk_v1.1.1/include --save-temps -c -o ets_wdt_disable.o  ets_wdt_disable.c
 
