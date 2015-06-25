@@ -70,8 +70,8 @@ and spelled the magic flash words again.
 
 He was confronted with
 
-   Blinky, SDK version:1.1.1
-   $T05#b9
+    Blinky, SDK version:1.1.1
+    $T05#b9
 
 Seeing his tag he wanted to start blinking again but couldn't. Nothing happens.
 
@@ -85,6 +85,109 @@ Nothing happened, no watch dog arrived.
 So he learned:
 
 **Don't expect watchdog timer resets when entering a break point!**
+
+Blinky decided to look up the cryptic response `$T05#b9` in his magic book and found it to be word of the ancient language of [_gdb stubs_](https://sourceware.org/gdb/onlinedocs/gdb/Stop-Reply-Packets.html#Stop-Reply-Packets).
+
+_T05_ told him that he was trapped (got a signal to enter debugger).
+The gdb stub took control and asks for assistance.
+
+He felt adventorous and gave a magic reply he found somewhere:
+
+    $g#67
+
+The explanation he found for this was _packet to request register contents_.
+
+To his surprise he got an answer:
+
+    $fa38244010fcff3f0100000016000000201fff3f010000000000200010dcff3f150000000000000000000000d91f0040508efe3f088efe3f928cfe3f00000000807c10400b0000000000000002000000000000003200000000000000000000000000000000000000000000000000000000000000807c10400000000000000000200000000000000000000000fa382440000000004400000000000000000000001104000000001040000000000800000055152201000000000000000000000000000000009919af80#b8
+
+But he didn't understood it. He knew he needed someone to help him. The esp-open-sdk was caled to the rescue and it send `gdb` to help.
+
+`gdb` told Blinky to exit the terminal and let him do his job.
+
+`gdb` spelled his magic words
+
+    xtensa-lx106-elf-gdb build/app.out
+
+and got a response
+
+    GNU gdb (crosstool-NG 1.20.0) 7.5.1
+    Copyright (C) 2012 Free Software Foundation, Inc.
+    License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+    This is free software: you are free to change and redistribute it.
+    There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
+    and "show warranty" for details.
+    This GDB was configured as "--host=x86_64-build_unknown-linux-gnu --target=xtensa-lx106-elf".
+    For bug reporting instructions, please see:
+    <http://www.gnu.org/software/gdb/bugs/>.
+    Reading symbols from .../source-code-examples/blinky/build/app.out...done.
+    (gdb)
+
+So he knew what code to expect and connects now:
+
+    (gdb) target remote /dev/ttyUSB0
+    Remote debugging using /dev/ttyUSB0
+    gdb_breakpoint () at arch_esp8266.c:35
+    35	arch_esp8266.c: No such file or directory.
+
+Lets ignore the missing source error for now.
+
+We are in the methods `gdb_breakpoint ()`!
+
+Where do we come from? 
+
+Lets print a back trace 
+
+    (gdb) bt
+    #0  gdb_breakpoint () at arch_esp8266.c:35
+    #1  0x402438fa in user_init () at user/user_main.c:77
+    #2  0x4024050f in ?? ()
+    #3  0x4024050f in ?? ()
+    Backtrace stopped: previous frame identical to this frame (corrupt stack?)
+
+Now explore the caller of gdb_breakpoint:
+
+    (gdb) up
+    #1  0x402438fa in user_init () at user/user_main.c:77
+    77	    gdb_breakpoint();
+    (gdb) list
+    72	    //0 for once and 1 for repeating
+    73	    os_timer_arm(&some_timer, 1000, 1);
+    74	    
+    75	    //Start os task
+    76	    system_os_task(user_procTask, user_procTaskPrio,user_procTaskQueue, user_procTaskQueueLen);
+    77	    gdb_breakpoint();
+    78	}
+
+Then `gdb` remembered poor little Blinky and released him by issuing a magic `continue`:
+
+    (gdb) c
+    Continuing.
+
+And Blinky does what he lived for ...
+
+    1010101010101010101010101
+    010101010101010101010
+
+To be continued ...
+
+
+80	void user_rf_pre_init(void)
+81	{
+
+
+
+
+
+
+
+
+
+   
+
+
+
+
 
 
 
