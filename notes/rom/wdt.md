@@ -1,7 +1,9 @@
 # Analyzing Watchdog Timer methods
 
 The ESP8266 firmware rom contains watch dog timer related functions. 
-On this page I show how I tried to understand them.
+On this page I show how I tried to understand them. I did my best to be accurate but the following will contains bugs, wrong assumptions etc. Raise an issue if you find any.
+
+The following symbols of the ROM firmware contain `wdt` in their names:
 
     grep wdt ld/eagle.rom.addr.v6.ld 
     PROVIDE ( ets_wdt_disable = 0x400030f0 );
